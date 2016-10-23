@@ -23,7 +23,11 @@ export default function createRendererStore(enhancer) {
 
   store._dispatch = store.dispatch;
   store.dispatch = (action) => {
-    (action) && ipcRenderer.send('renderer-dispatch', action);
+    if(typeof action === 'function') { // redux-thunk support
+      action(store.dispatch, store.getState.bind(store));
+    } else {
+      (action) && ipcRenderer.send('renderer-dispatch', action);
+    }
   };
 
   ipcRenderer.on('update-state', (event, dispatchedAction, updatedState) => {
